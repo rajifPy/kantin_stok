@@ -50,7 +50,8 @@ function generateBarcodeSVG(text: string): string {
   let x = 20; // Start position
   let barsHTML = '';
   
-  bars.forEach(bar => {
+  // ✅ FIX: Convert string to array using split('')
+  bars.split('').forEach(bar => {
     if (bar === '1') {
       barsHTML += `<rect x="${x}" y="10" width="${barWidth}" height="${barHeight}" fill="black"/>`;
     }
