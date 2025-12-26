@@ -1,259 +1,261 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { Product, Transaction } from '@/types';
-import { formatCurrency } from '@/lib/utils';
-import { StatsCard } from '@/components/ui/StatsCard';
-import { Card, CardBody } from '@/components/ui/Card';
-import { Package, TrendingUp, ShoppingCart, DollarSign, AlertTriangle, ArrowRight } from 'lucide-react';
-import Link from 'next/link';
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { LogIn, User, Lock, Eye, EyeOff, ShoppingBag, Sparkles } from 'lucide-react';
 
-export default function DashboardPage() {
-  const [stats, setStats] = useState({
-    totalProducts: 0,
-    totalStock: 0,
-    lowStockCount: 0,
-    todayTransactions: 0,
-    todayRevenue: 0,
-    todayProfit: 0,
+export default function LoginPage() {
+  const router = useRouter();
+  const [formData, setFormData] = useState({
+    username: '',
+    password: '',
   });
-  const [recentTransactions, setRecentTransactions] = useState<Transaction[]>([]);
-  const [lowStockProducts, setLowStockProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
-  useEffect(() => {
-    fetchDashboardData();
-  }, []);
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
 
-  const fetchDashboardData = async () => {
     try {
-      // Fetch products
-      const productsRes = await fetch('/api/products');
-      const { data: products } = await productsRes.json();
+      if (!formData.username || !formData.password) {
+        setError('Username dan password harus diisi');
+        setLoading(false);
+        return;
+      }
 
-      // Fetch transactions
-      const transRes = await fetch('/api/transactions?limit=100');
-      const { data: transactions } = await transRes.json();
+      const isValidUser = formData.username === 'admin';
+      const isValidPassword = formData.password === 'admin123';
 
-      // Calculate stats
-      const today = new Date().toISOString().split('T')[0];
-      const todayTrans = transactions.filter((t: Transaction) =>
-        t.created_at.startsWith(today)
-      );
-
-      const lowStock = products.filter((p: Product) => p.stok < 10);
-
-      setStats({
-        totalProducts: products.length,
-        totalStock: products.reduce((sum: number, p: Product) => sum + p.stok, 0),
-        lowStockCount: lowStock.length,
-        todayTransactions: todayTrans.length,
-        todayRevenue: todayTrans.reduce((sum: number, t: Transaction) => sum + t.total_harga, 0),
-        todayProfit: todayTrans.reduce((sum: number, t: Transaction) => sum + t.keuntungan, 0),
-      });
-
-      setRecentTransactions(transactions.slice(0, 5));
-      setLowStockProducts(lowStock.slice(0, 5));
-      setLoading(false);
-    } catch (error) {
-      console.error('Error fetching dashboard data:', error);
+      if (isValidUser && isValidPassword) {
+        sessionStorage.setItem('auth', 'true');
+        sessionStorage.setItem('username', formData.username);
+        await new Promise(resolve => setTimeout(resolve, 500));
+        router.push('/dashboard');
+      } else if (!isValidUser) {
+        setError('Username tidak ditemukan');
+      } else {
+        setError('Password salah');
+      }
+    } catch (err) {
+      setError('Terjadi kesalahan. Silakan coba lagi.');
+      console.error('Login error:', err);
+    } finally {
       setLoading(false);
     }
   };
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-50">
-        <div className="text-center">
-          <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-600 font-medium">Memuat data...</p>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50">
-      {/* Header */}
-      <div className="bg-white shadow-sm border-b">
-        <div className="px-8 py-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                Dashboard
+    <div className="min-h-screen relative overflow-hidden bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600">
+      {/* Animated Background */}
+      <div className="absolute inset-0">
+        {/* Floating Orbs */}
+        <div className="absolute top-20 left-20 w-72 h-72 bg-blue-400 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob"></div>
+        <div className="absolute top-40 right-20 w-72 h-72 bg-purple-400 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-2000"></div>
+        <div className="absolute -bottom-32 left-1/2 w-72 h-72 bg-pink-400 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-4000"></div>
+        
+        {/* Grid Pattern */}
+        <div className="absolute inset-0 bg-grid-white/[0.05] bg-[size:40px_40px]"></div>
+        
+        {/* Gradient Overlay */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
+      </div>
+
+      {/* Floating Icons */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <Sparkles className="absolute top-1/4 left-1/4 text-white/20 w-8 h-8 animate-pulse" />
+        <ShoppingBag className="absolute top-1/3 right-1/3 text-white/20 w-10 h-10 animate-bounce" style={{animationDelay: '1s'}} />
+        <Sparkles className="absolute bottom-1/4 right-1/4 text-white/20 w-6 h-6 animate-pulse" style={{animationDelay: '2s'}} />
+      </div>
+
+      <div className="relative z-10 min-h-screen flex items-center justify-center p-4">
+        <div className="w-full max-w-md">
+          {/* Login Card with Glassmorphism */}
+          <div className="backdrop-blur-xl bg-white/10 border border-white/20 rounded-3xl shadow-2xl overflow-hidden">
+            {/* Header */}
+            <div className="relative p-8 text-center">
+              {/* Logo Container */}
+              <div className="relative inline-block mb-6">
+                <div className="absolute inset-0 bg-white/20 rounded-full blur-xl"></div>
+                <div className="relative w-24 h-24 bg-gradient-to-br from-white/30 to-white/10 backdrop-blur-sm rounded-full border border-white/30 flex items-center justify-center shadow-xl">
+                  <ShoppingBag className="text-white w-12 h-12" />
+                </div>
+                {/* Floating Ring */}
+                <div className="absolute inset-0 rounded-full border-2 border-white/20 animate-ping"></div>
+              </div>
+              
+              <h1 className="text-4xl font-bold text-white mb-2 drop-shadow-lg">
+                Kantin Sekolah
               </h1>
-              <p className="text-gray-600 mt-2">Selamat datang kembali! Berikut ringkasan hari ini.</p>
+              <p className="text-white/80 text-lg">Sistem Manajemen Modern</p>
             </div>
-            <div className="text-right">
-              <p className="text-sm text-gray-500">Hari ini</p>
-              <p className="text-lg font-semibold text-gray-900">
-                {new Date().toLocaleDateString('id-ID', { 
-                  weekday: 'long', 
-                  year: 'numeric', 
-                  month: 'long', 
-                  day: 'numeric' 
-                })}
-              </p>
+
+            {/* Login Form */}
+            <div className="p-8 pt-0">
+              <form onSubmit={handleSubmit} className="space-y-6">
+                {error && (
+                  <div className="backdrop-blur-xl bg-red-500/20 border border-red-400/50 p-4 rounded-2xl animate-shake">
+                    <div className="flex items-center gap-3">
+                      <svg className="w-5 h-5 text-red-200" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                      </svg>
+                      <span className="text-white text-sm font-medium">{error}</span>
+                    </div>
+                  </div>
+                )}
+
+                {/* Username Input */}
+                <div className="space-y-2">
+                  <label className="text-white/90 text-sm font-medium">Username</label>
+                  <div className="relative group">
+                    <div className="absolute inset-0 bg-gradient-to-r from-blue-400 to-purple-400 rounded-2xl blur opacity-20 group-hover:opacity-30 transition-opacity"></div>
+                    <div className="relative backdrop-blur-xl bg-white/10 border border-white/20 rounded-2xl overflow-hidden transition-all group-hover:border-white/40">
+                      <div className="absolute left-4 top-1/2 -translate-y-1/2">
+                        <User className="text-white/60" size={20} />
+                      </div>
+                      <input
+                        type="text"
+                        placeholder="Masukkan username"
+                        value={formData.username}
+                        onChange={(e) => setFormData({ ...formData, username: e.target.value })}
+                        className="w-full pl-12 pr-4 py-4 bg-transparent text-white placeholder-white/50 focus:outline-none"
+                        required
+                        autoComplete="username"
+                        disabled={loading}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Password Input */}
+                <div className="space-y-2">
+                  <label className="text-white/90 text-sm font-medium">Password</label>
+                  <div className="relative group">
+                    <div className="absolute inset-0 bg-gradient-to-r from-purple-400 to-pink-400 rounded-2xl blur opacity-20 group-hover:opacity-30 transition-opacity"></div>
+                    <div className="relative backdrop-blur-xl bg-white/10 border border-white/20 rounded-2xl overflow-hidden transition-all group-hover:border-white/40">
+                      <div className="absolute left-4 top-1/2 -translate-y-1/2">
+                        <Lock className="text-white/60" size={20} />
+                      </div>
+                      <input
+                        type={showPassword ? 'text' : 'password'}
+                        placeholder="Masukkan password"
+                        value={formData.password}
+                        onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                        className="w-full pl-12 pr-14 py-4 bg-transparent text-white placeholder-white/50 focus:outline-none"
+                        required
+                        autoComplete="current-password"
+                        disabled={loading}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-4 top-1/2 -translate-y-1/2 text-white/60 hover:text-white transition-colors"
+                        disabled={loading}
+                      >
+                        {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Submit Button */}
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="relative w-full group"
+                >
+                  <div className="absolute inset-0 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 rounded-2xl blur opacity-50 group-hover:opacity-75 transition-opacity"></div>
+                  <div className="relative backdrop-blur-xl bg-gradient-to-r from-blue-500/90 via-purple-500/90 to-pink-500/90 border border-white/20 rounded-2xl px-6 py-4 font-semibold text-white shadow-xl transform transition-all group-hover:scale-[1.02] group-hover:shadow-2xl disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none">
+                    {loading ? (
+                      <div className="flex items-center justify-center gap-3">
+                        <div className="w-5 h-5 border-3 border-white/30 border-t-white rounded-full animate-spin"></div>
+                        <span>Memproses...</span>
+                      </div>
+                    ) : (
+                      <div className="flex items-center justify-center gap-2">
+                        <LogIn size={20} />
+                        <span>Login Sekarang</span>
+                      </div>
+                    )}
+                  </div>
+                </button>
+              </form>
+
+              {/* Demo Credentials */}
+              <div className="mt-8 backdrop-blur-xl bg-white/5 border border-white/10 rounded-2xl p-6">
+                <div className="flex items-center gap-2 mb-4">
+                  <svg className="w-5 h-5 text-blue-300" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                  </svg>
+                  <span className="text-white/90 text-sm font-semibold">Demo Credentials</span>
+                </div>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between backdrop-blur-xl bg-white/5 px-4 py-3 rounded-xl border border-white/10">
+                    <span className="text-white/70 text-sm">Username:</span>
+                    <code className="bg-white/10 px-3 py-1.5 rounded-lg font-mono font-semibold text-white text-sm border border-white/20">admin</code>
+                  </div>
+                  <div className="flex items-center justify-between backdrop-blur-xl bg-white/5 px-4 py-3 rounded-xl border border-white/10">
+                    <span className="text-white/70 text-sm">Password:</span>
+                    <code className="bg-white/10 px-3 py-1.5 rounded-lg font-mono font-semibold text-white text-sm border border-white/20">admin123</code>
+                  </div>
+                </div>
+              </div>
             </div>
+          </div>
+
+          {/* Footer */}
+          <div className="mt-8 text-center">
+            <p className="text-white/60 text-sm backdrop-blur-sm bg-white/5 rounded-full px-6 py-3 inline-block border border-white/10">
+              © 2024 Kantin Sekolah. All rights reserved.
+            </p>
           </div>
         </div>
       </div>
 
-      <div className="p-8">
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <StatsCard
-            title="Total Produk"
-            value={stats.totalProducts}
-            icon={Package}
-            color="blue"
-          />
-          <StatsCard
-            title="Total Stok"
-            value={stats.totalStock}
-            icon={TrendingUp}
-            color="green"
-          />
-          <StatsCard
-            title="Transaksi Hari Ini"
-            value={stats.todayTransactions}
-            icon={ShoppingCart}
-            color="purple"
-          />
-          <StatsCard
-            title="Pendapatan Hari Ini"
-            value={formatCurrency(stats.todayRevenue)}
-            icon={DollarSign}
-            color="orange"
-          />
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-          {/* Quick Stats */}
-          <Card className="bg-gradient-to-br from-blue-500 to-purple-600 text-white border-0 shadow-xl">
-            <CardBody className="p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold">Keuntungan Hari Ini</h3>
-                <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm">
-                  <TrendingUp size={24} />
-                </div>
-              </div>
-              <p className="text-4xl font-bold mb-2">{formatCurrency(stats.todayProfit)}</p>
-              <p className="text-blue-100 text-sm">
-                Dari {stats.todayTransactions} transaksi hari ini
-              </p>
-            </CardBody>
-          </Card>
-
-          {/* Low Stock Alert */}
-          <Card className="bg-gradient-to-br from-orange-500 to-red-600 text-white border-0 shadow-xl">
-            <CardBody className="p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold">Produk Stok Menipis</h3>
-                <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm">
-                  <AlertTriangle size={24} />
-                </div>
-              </div>
-              <p className="text-4xl font-bold mb-2">{stats.lowStockCount}</p>
-              <Link 
-                href="/dashboard/products?lowStock=true"
-                className="text-orange-100 text-sm hover:text-white inline-flex items-center gap-1 transition-colors"
-              >
-                Lihat detail <ArrowRight size={16} />
-              </Link>
-            </CardBody>
-          </Card>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Recent Transactions */}
-          <Card>
-            <CardBody className="p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-lg font-semibold text-gray-900">Transaksi Terbaru</h3>
-                <Link 
-                  href="/dashboard/transactions"
-                  className="text-sm text-blue-600 hover:text-blue-700 font-medium inline-flex items-center gap-1"
-                >
-                  Lihat semua <ArrowRight size={16} />
-                </Link>
-              </div>
-              
-              {recentTransactions.length > 0 ? (
-                <div className="space-y-4">
-                  {recentTransactions.map((transaction) => (
-                    <div
-                      key={transaction.id}
-                      className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
-                    >
-                      <div className="flex-1">
-                        <p className="font-medium text-gray-900">{transaction.nama_produk}</p>
-                        <p className="text-sm text-gray-500">
-                          {transaction.jumlah} × {formatCurrency(transaction.harga_satuan)}
-                        </p>
-                      </div>
-                      <div className="text-right">
-                        <p className="font-semibold text-gray-900">
-                          {formatCurrency(transaction.total_harga)}
-                        </p>
-                        <p className="text-xs text-green-600">
-                          +{formatCurrency(transaction.keuntungan)}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-12">
-                  <ShoppingCart className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-                  <p className="text-gray-500">Belum ada transaksi hari ini</p>
-                </div>
-              )}
-            </CardBody>
-          </Card>
-
-          {/* Low Stock Products */}
-          <Card>
-            <CardBody className="p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-lg font-semibold text-gray-900">Produk Perlu Restock</h3>
-                <Link 
-                  href="/dashboard/products"
-                  className="text-sm text-blue-600 hover:text-blue-700 font-medium inline-flex items-center gap-1"
-                >
-                  Kelola produk <ArrowRight size={16} />
-                </Link>
-              </div>
-              
-              {lowStockProducts.length > 0 ? (
-                <div className="space-y-4">
-                  {lowStockProducts.map((product) => (
-                    <div
-                      key={product.id}
-                      className="flex items-center justify-between p-4 bg-orange-50 rounded-lg border border-orange-100"
-                    >
-                      <div className="flex-1">
-                        <p className="font-medium text-gray-900">{product.nama_produk}</p>
-                        <p className="text-sm text-gray-500">{product.kategori}</p>
-                      </div>
-                      <div className="text-right">
-                        <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-800">
-                          {product.stok === 0 ? 'Habis' : `${product.stok} unit`}
-                        </span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-12">
-                  <Package className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-                  <p className="text-gray-500">Semua produk stok aman</p>
-                </div>
-              )}
-            </CardBody>
-          </Card>
-        </div>
-      </div>
+      <style jsx>{`
+        @keyframes shake {
+          0%, 100% { transform: translateX(0); }
+          10%, 30%, 50%, 70%, 90% { transform: translateX(-8px); }
+          20%, 40%, 60%, 80% { transform: translateX(8px); }
+        }
+        .animate-shake {
+          animation: shake 0.5s ease-in-out;
+        }
+        
+        @keyframes blob {
+          0%, 100% {
+            transform: translate(0, 0) scale(1);
+          }
+          25% {
+            transform: translate(20px, -50px) scale(1.1);
+          }
+          50% {
+            transform: translate(-20px, 20px) scale(0.9);
+          }
+          75% {
+            transform: translate(50px, 50px) scale(1.05);
+          }
+        }
+        
+        .animate-blob {
+          animation: blob 7s infinite;
+        }
+        
+        .animation-delay-2000 {
+          animation-delay: 2s;
+        }
+        
+        .animation-delay-4000 {
+          animation-delay: 4s;
+        }
+        
+        .bg-grid-white\/\[0\.05\] {
+          background-image: linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+                            linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+        }
+      `}</style>
     </div>
   );
 }
