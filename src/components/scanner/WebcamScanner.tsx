@@ -50,7 +50,7 @@ export default function WebcamScanner() {
       setResult(null);
 
       await scannerRef.current.decodeFromVideoDevice(
-        selectedDevice || undefined,
+        selectedDevice || null,
         videoRef.current,
         (detectedResult, err) => {
           if (detectedResult) {
